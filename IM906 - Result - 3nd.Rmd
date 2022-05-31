@@ -1,0 +1,432 @@
+---
+output:
+  pdf_document: default
+  html_document: default
+---
+1. Loading libraries
+```{r}
+library(lubridate)
+library(ggplot2)
+library(dplyr)
+library(readr)
+library(tidyr)
+library(tidytext)
+library(broom)
+library(NLP)
+library(tidyverse)
+library(generics)
+library(stringr)
+library(psych)
+library(FactoMineR)
+library(GPArotation)
+```
+
+```{r}
+#Import LIWC analysis result
+tw_liwc<-read.csv("LIWC2015 Results (tw_clean@20210829.csv).csv")
+
+#Creating date column with double object of date
+tw_liwc1<-tw_liwc%>%
+  separate(C,into = c("year","month","day"),"-")%>%
+  mutate(year = str_replace_all(year,pattern = "2021",replacement = "21"))%>%
+  mutate(year = str_replace_all(year,pattern = "2020",replacement = "20"))%>%
+  mutate(date=paste(day,month,year,sep="/"))%>%
+  mutate(date=as.Date(date,"%d/%m/%y"))
+
+#Sentiment Dataset
+tw_liwc2<-tw_liwc1[,6:45]
+```
+
+2. Descriptive Analysis
+```{r}
+#Divided Periods
+tw_liwc_descrptive<-tw_liwc
+p1<-subset(tw_liwc_descrptive,date<="2020-08-23")
+p2<-subset(tw_liwc_descrptive,date>="2020-08-24"&date<="2021-06-01")
+p3<-subset(tw_liwc_descrptive,date>="2021-06-02")
+
+#Descriptive Analysis
+p1<-p1%>%
+  group_by(date)%>%
+  mutate(ppron1=round(mean(ppron),2))%>%
+  mutate(i1=round(mean(i),2))%>%
+  mutate(we1=round(mean(we),2))%>%
+  mutate(you1=round(mean(you),2))%>%  
+  mutate(shehe1=round(mean(shehe),2))%>%
+  mutate(they1=round(mean(they),2))%>%
+  mutate(posemo1=round(mean(posemo),2))%>%
+  mutate(negemo1=round(mean(negemo),2))%>%
+  mutate(anx1=round(mean(anx),2))%>%
+  mutate(anger1=round(mean(anger),2))%>%
+  mutate(sad1=round(mean(sad),2))%>%
+  mutate(social1=round(mean(social),2))%>%
+  mutate(family1=round(mean(family),2))%>%
+  mutate(friend1=round(mean(friend),2))%>%
+  mutate(female1=round(mean(female),2))%>%
+  mutate(male1=round(mean(male),2))%>%
+  mutate(cogproc1=round(mean(cogproc),2))%>%  
+  mutate(insight1=round(mean(insight),2))%>%
+  mutate(cause1=round(mean(cause),2))%>%
+  mutate(discrep1=round(mean(discrep),2))%>%  
+  mutate(tentat1=round(mean(tentat),2))%>%  
+  mutate(certain1=round(mean(certain),2))%>%  
+  mutate(differ1=round(mean(differ),2))%>%  
+  mutate(feel1=round(mean(feel),2))%>%  
+  mutate(body1=round(mean(body),2))%>%  
+  mutate(health1=round(mean(health),2))%>%
+  mutate(affiliation1=round(mean(affiliation),2))%>%
+  mutate(power1=round(mean(power),2))%>%
+  mutate(risk1=round(mean(risk),2))%>%
+  mutate(focuspast1=round(mean(focuspast),2))%>%
+  mutate(focuspresent1=round(mean(focuspresent),2))%>%
+  mutate(focusfuture1=round(mean(focusfuture),2))%>%
+  mutate(motion1=round(mean(motion),2))%>%
+  mutate(work1=round(mean(work),2))%>%
+  mutate(leisure1=round(mean(leisure),2))%>%
+  mutate(home1=round(mean(home),2))%>%
+  mutate(relig1=round(mean(relig),2))%>%
+  mutate(death1=round(mean(death),2))%>%
+  mutate(swear1=round(mean(swear),2))%>%
+  mutate(netspeak1=round(mean(netspeak),2))
+
+p2<-p2%>%
+  group_by(date)%>%
+  mutate(ppron1=round(mean(ppron),2))%>%
+  mutate(i1=round(mean(i),2))%>%
+  mutate(we1=round(mean(we),2))%>%
+  mutate(you1=round(mean(you),2))%>%  
+  mutate(shehe1=round(mean(shehe),2))%>%
+  mutate(they1=round(mean(they),2))%>%
+  mutate(posemo1=round(mean(posemo),2))%>%
+  mutate(negemo1=round(mean(negemo),2))%>%
+  mutate(anx1=round(mean(anx),2))%>%
+  mutate(anger1=round(mean(anger),2))%>%
+  mutate(sad1=round(mean(sad),2))%>%
+  mutate(social1=round(mean(social),2))%>%
+  mutate(family1=round(mean(family),2))%>%
+  mutate(friend1=round(mean(friend),2))%>%
+  mutate(female1=round(mean(female),2))%>%
+  mutate(male1=round(mean(male),2))%>%
+  mutate(cogproc1=round(mean(cogproc),2))%>%  
+  mutate(insight1=round(mean(insight),2))%>%
+  mutate(cause1=round(mean(cause),2))%>%
+  mutate(discrep1=round(mean(discrep),2))%>%  
+  mutate(tentat1=round(mean(tentat),2))%>%  
+  mutate(certain1=round(mean(certain),2))%>%  
+  mutate(differ1=round(mean(differ),2))%>%  
+  mutate(feel1=round(mean(feel),2))%>%  
+  mutate(body1=round(mean(body),2))%>%  
+  mutate(health1=round(mean(health),2))%>%
+  mutate(affiliation1=round(mean(affiliation),2))%>%
+  mutate(power1=round(mean(power),2))%>%
+  mutate(risk1=round(mean(risk),2))%>%
+  mutate(focuspast1=round(mean(focuspast),2))%>%
+  mutate(focuspresent1=round(mean(focuspresent),2))%>%
+  mutate(focusfuture1=round(mean(focusfuture),2))%>%
+  mutate(motion1=round(mean(motion),2))%>%
+  mutate(work1=round(mean(work),2))%>%
+  mutate(leisure1=round(mean(leisure),2))%>%
+  mutate(home1=round(mean(home),2))%>%
+  mutate(relig1=round(mean(relig),2))%>%
+  mutate(death1=round(mean(death),2))%>%
+  mutate(swear1=round(mean(swear),2))%>%
+  mutate(netspeak1=round(mean(netspeak),2))
+
+p3<-p3%>%
+  group_by(date)%>%
+  mutate(ppron1=round(mean(ppron),2))%>%
+  mutate(i1=round(mean(i),2))%>%
+  mutate(we1=round(mean(we),2))%>%
+  mutate(you1=round(mean(you),2))%>%  
+  mutate(shehe1=round(mean(shehe),2))%>%
+  mutate(they1=round(mean(they),2))%>%
+  mutate(posemo1=round(mean(posemo),2))%>%
+  mutate(negemo1=round(mean(negemo),2))%>%
+  mutate(anx1=round(mean(anx),2))%>%
+  mutate(anger1=round(mean(anger),2))%>%
+  mutate(sad1=round(mean(sad),2))%>%
+  mutate(social1=round(mean(social),2))%>%
+  mutate(family1=round(mean(family),2))%>%
+  mutate(friend1=round(mean(friend),2))%>%
+  mutate(female1=round(mean(female),2))%>%
+  mutate(male1=round(mean(male),2))%>%
+  mutate(cogproc1=round(mean(cogproc),2))%>%  
+  mutate(insight1=round(mean(insight),2))%>%
+  mutate(cause1=round(mean(cause),2))%>%
+  mutate(discrep1=round(mean(discrep),2))%>%  
+  mutate(tentat1=round(mean(tentat),2))%>%  
+  mutate(certain1=round(mean(certain),2))%>%  
+  mutate(differ1=round(mean(differ),2))%>%  
+  mutate(feel1=round(mean(feel),2))%>%  
+  mutate(body1=round(mean(body),2))%>%  
+  mutate(health1=round(mean(health),2))%>%
+  mutate(affiliation1=round(mean(affiliation),2))%>%
+  mutate(power1=round(mean(power),2))%>%
+  mutate(risk1=round(mean(risk),2))%>%
+  mutate(focuspast1=round(mean(focuspast),2))%>%
+  mutate(focuspresent1=round(mean(focuspresent),2))%>%
+  mutate(focusfuture1=round(mean(focusfuture),2))%>%
+  mutate(motion1=round(mean(motion),2))%>%
+  mutate(work1=round(mean(work),2))%>%
+  mutate(leisure1=round(mean(leisure),2))%>%
+  mutate(home1=round(mean(home),2))%>%
+  mutate(relig1=round(mean(relig),2))%>%
+  mutate(death1=round(mean(death),2))%>%
+  mutate(swear1=round(mean(swear),2))%>%
+  mutate(netspeak1=round(mean(netspeak),2))
+
+```
+
+3. Factor Analysis
+```{r}
+#Standarise
+tw_liwc2.1<-tw_liwc2
+for (i in 1:length(tw_liwc2)) {
+  tw_liwc2.1[[i]]<-(tw_liwc2[[i]]-mean(tw_liwc2[[i]]))/sd(tw_liwc2[[i]])
+}
+
+#Checking correlation
+round(cor.tw_liwc<-cor(tw_liwc2.1,use="pairwise.complete.obs",method="spearman"),2)
+library(corrplot)
+corrplot(corr=cor.tw_liwc, method = "shade",shade.col = NA, tl.col ="black", tl.srt = 45, order = "AOE")
+```
+```{r}
+#Choosing factor analysis model
+#Round 1
+fa.parallel(tw_liwc2.1)
+```
+
+```{r}
+f1.1<-factanal(tw_liwc2.1,factors = 2,rotation = "none")
+f1.2<-factanal(tw_liwc2.1,factors = 3,rotation = "none")
+f1.3<-factanal(tw_liwc2.1,factors = 4,rotation = "none")
+f1.4<-factanal(tw_liwc2.1,factors = 5,rotation = "none")
+round(rbind(f1.1$uniqueness,f1.2$uniqueness,f1.3$uniqueness,f1.4$uniqueness),2)
+#Variables "health", "feel", "family", "friend", "female", "male", "body", "motion"
+#"netspeak" will be omitted in the next step due to high uniqueness and irrelevance with topic
+```
+```{r}
+#Round 2
+#Omit variables
+tw_liwc3<-subset(tw_liwc2.1,select = c("ppron","i","we","you","shehe","they","posemo",
+                                       "negemo","anx","anger","sad","cogproc","insight",
+                                       "cause","discrep","tentat","certain","differ",
+                                       "affiliation","power","risk","focuspast",
+                                       "focuspresent","focusfuture","work","leisure",
+                                       "home","relig","death","swear"))
+#Scree Plot
+fa.parallel(tw_liwc3)
+
+print(f2<-factanal(tw_liwc3,factors = 2,rotation = "none"))
+print(f2.1<-factanal(tw_liwc3,factors = 3,rotation = "none"))
+print(f2.2<-factanal(tw_liwc3,factors = 4,rotation = "none"))
+print(f2.3<-factanal(tw_liwc3,factors = 5,rotation = "none"))
+round(rbind(f2$uniqueness,f2.1$uniqueness,f2.2$uniqueness,f2.3$uniqueness),2)
+```
+```{r}
+#Round 3
+#Omit personal pounces and part of 1 uniqueness to see the result
+tw_liwc4<-subset(tw_liwc2.1,select = c("negemo","anx","anger","sad",
+                                       "cogproc","insight","cause","discrep",
+                                       "tentat","certain","differ","affiliation",
+                                       "power","risk","focuspast","focuspresent",
+                                       "focusfuture","relig","death","swear"))
+
+#Scree Plot
+fa.parallel(tw_liwc4)
+
+print(f3.0<-factanal(tw_liwc4,factors = 2,rotation = "none"))
+print(f3.1<-factanal(tw_liwc4,factors = 3,rotation = "none"))
+print(f3.2<-factanal(tw_liwc4,factors = 4,rotation = "none"))
+print(f3.3<-factanal(tw_liwc4,factors = 5,rotation = "none"))
+round(rbind(f3.0$uniqueness,f3.1$uniqueness,f3.2$uniqueness,f3.3$uniqueness),2)
+```
+
+```{r}
+#Round 4
+#Omit high and 0 uniqueness items
+tw_liwc5<-subset(tw_liwc2.1,select = c("negemo","anx","anger","sad",
+                                       "insight","cause","discrep",
+                                       "tentat","certain","differ",
+                                       "risk","focuspresent",
+                                       "focusfuture","relig","death","swear"))
+
+#Scree Plot
+fa.parallel(tw_liwc5)
+
+print(f4.0<-factanal(tw_liwc5,factors = 2,rotation = "none"))
+print(f4.1<-factanal(tw_liwc5,factors = 3,rotation = "none"))
+print(f4.2<-factanal(tw_liwc5,factors = 4,rotation = "none"))
+print(f4.3<-factanal(tw_liwc5,factors = 5,rotation = "none"))
+round(rbind(f4.0$uniqueness,f4.1$uniqueness,f4.2$uniqueness,f4.3$uniqueness),2)
+```
+```{r}
+#Round 5
+#Omit high uniqueness items
+tw_liwc6<-subset(tw_liwc2.1,select = c("negemo","anx","anger","sad","discrep",
+                                       "tentat","differ","risk","focuspresent",
+                                       "focusfuture","relig","death","swear"))
+
+#Scree Plot
+fa.parallel(tw_liwc6)
+
+print(f5.0<-factanal(tw_liwc6,factors = 2,rotation = "none"))
+print(f5.1<-factanal(tw_liwc6,factors = 3,rotation = "none"))
+print(f5.2<-factanal(tw_liwc6,factors = 4,rotation = "none"))
+print(f5.3<-factanal(tw_liwc6,factors = 5,rotation = "none"))
+round(rbind(f5.0$uniqueness,f5.1$uniqueness,f5.2$uniqueness,f5.3$uniqueness),2)
+#f5.1 and f5.2 was selected to further compare
+```
+
+```{r}
+#Round 6
+#Omit items which had high uniqueness and extreme small loadings 
+tw_liwc7<-subset(tw_liwc2.1,select = c("negemo","anx","anger","sad","discrep",
+                                       "tentat","differ","risk","focuspresent",
+                                       "focusfuture","swear"))
+#Correlation Plot
+round(cor.tw_liwc7<-cor(tw_liwc7,use="pairwise.complete.obs",method="spearman"),2)
+library(corrplot)
+corrplot(corr=cor.tw_liwc7, method = "shade",shade.col = NA, tl.col ="black", tl.srt = 45, order = "AOE")
+```
+```{r}
+#Scree Plot
+fa.parallel(tw_liwc7)
+
+print(f6.0<-factanal(tw_liwc7,factors = 2,rotation = "none"))
+#items in f6.0 had higher uniqueness than other three (1), f6.0 was dropped
+print(f6.1<-factanal(tw_liwc7,factors = 3,rotation = "none"))
+print(f6.2<-factanal(tw_liwc7,factors = 4,rotation = "none"))
+print(f6.3<-factanal(tw_liwc7,factors = 5,rotation = "none"))
+round(rbind(f6.0$uniqueness,f6.1$uniqueness,f6.2$uniqueness,f6.3$uniqueness),2)
+#f6.1 and f6.2 was selected to further compare
+```
+
+```{r}
+#Round 7: Rotation was introduced
+
+print(f5.1.1<-factanal(tw_liwc6,factors = 3,rotation = "varimax"))
+print(f5.1.2<-factanal(tw_liwc6,factors = 3,rotation = "oblimin"))
+print(f5.2.1<-factanal(tw_liwc6,factors = 4,rotation = "varimax"))
+print(f5.2.2<-factanal(tw_liwc6,factors = 4,rotation = "oblimin"))
+#These four models had extreme small loadings from "religion" and "death", dropped
+print(f6.1.1<-factanal(tw_liwc7,factors = 3,rotation = "varimax"))
+print(f6.1.2<-factanal(tw_liwc7,factors = 3,rotation = "oblimin"))
+print(f6.2.1<-factanal(tw_liwc7,factors = 4,rotation = "varimax"))
+print(f6.2.2<-factanal(tw_liwc7,factors = 4,rotation = "oblimin"))
+#f6.1.2, f6.2.2 has distinct and interpretable distribution of factor loadings
+#further comparison:
+round(rbind(f6.1.2$uniqueness,f6.2.2$uniqueness),2)
+```
+
+```{r}
+f6.1.2
+```
+
+```{r}
+f6.2.2
+```
+
+```{r}
+#Comparing model
+library(psy)
+{layout(1:2); par(mar=c(2,2,1,1))
+scree.plot(f6.1.2$correlation);scree.plot(f6.2.2$correlation)}
+```
+```{r}
+{layout(1:2); par(mar=c(2,2,1,1))
+plot(f6.1.2$loadings[,1:2],type="n");text(f6.1.2$loadings[,1:2],labels=names(tw_liwc7),cex=1.2)
+plot(f6.2.2$loadings[,1:2],type="n");text(f6.2.2$loadings[,1:2],labels=names(tw_liwc7),cex=1.2)}
+```
+
+```{r}
+#Output
+
+#f6.1.2 was selected as a factor model
+#because it has more collective distribution as the word plot shows
+#Factor 1 can be interpreted as "anger" sentiment
+#Factor 2 as "fear" sentiment
+#Factor 3 as "mobilization" sentiment
+
+#Communality
+f6.1.2.communality<-round((1-f6.1.2$uniquenesses),2)
+write.csv(f6.1.2.communality,file = "communality.csv",sep = ",")
+
+#Factor scores
+f6.1.2.sco<-factor.scores(x = tw_liwc7,f = f6.1.2,method = "Bartlett")
+f6.1.2.sco$weights
+```
+4. Time Series Comparison
+```{r}
+#Sentiment Distribution
+fa_output <- as.data.frame(cbind(tw_liwc1$A,tw_liwc1$date,f6.1.2.sco$scores,tw_liwc2.1$posemo))
+colnames(fa_output)<-c("number","date","anger","fear","mobilization","positive")
+fa_output1<-fa_output%>%
+  mutate(date=as.Date(date,"%d/%m/%y"))%>%
+  group_by(date)%>%
+  mutate(anger_day=mean(as.numeric(anger)))%>%
+  mutate(fear_day=mean(as.numeric(fear)))%>%
+  mutate(mobilization_day=mean(as.numeric(mobilization)))%>%
+  mutate(positive_day=mean(as.numeric(positive)))%>%
+  ungroup()
+```
+```{r}
+  ggplot() + 
+  geom_smooth(data=fa_output1,aes(x=date,y = anger_day), color = "#FC4E07",size=0.3) + 
+  geom_smooth(data=fa_output1,aes(x=date,y = fear_day), color="#D16103",size=0.3) +
+  geom_smooth(data=fa_output1,aes(x=date,y = mobilization_day), color="#4E84C4",size=0.3) +
+  geom_smooth(data=fa_output1,aes(x=date,y = positive_day), color="#52854C",size=0.3)+
+  scale_color_manual(name="Sentiment", values = c("anger"="#FC4E07","fear"="#D16103",
+                                                  "mobilization"="#4E84C4",
+                                                  "positive"="#52854C"))+
+  geom_vline(xintercept = fa_output1$date[10104],linetype=4,show.legend = T)+
+  geom_vline(xintercept = fa_output1$date[174516],linetype=4,show.legend = T)
+```
+
+```{r}
+ggplot() + 
+  geom_smooth(data=fa_output1,aes(x=date,y = anger_day,anger= "#FC4E07"), color = "#FC4E07",size=0.3,show.legend = T) + 
+  #geom_smooth(data=fa_output1,aes(x=date,y = fear_day), color="#D16103",size=0.3,show.legend = T) +
+  #geom_smooth(data=fa_output1,aes(x=date,y = mobilization_day), color="#4E84C4",size=0.3,show.legend = T) +
+  #geom_smooth(data=fa_output1,aes(x=date,y = positive_day), color="#52854C",size=0.3,show.legend = T)+
+  scale_color_manual(name="Sentiment", values = c("anger"="#FC4E07","fear"="#D16103",
+                                                  "mobilization"="#4E84C4",
+                                                  "positive"="#52854C"))+
+  geom_vline(xintercept = fa_output1$date[10104],linetype=4,show.legend = T)+
+  geom_vline(xintercept = fa_output1$date[174516],linetype=4,show.legend = T)
+  theme(legend.position = "bottom")
+  
+  
+
+```
+```{r}
+#Anger
+ggplot(fa_output1,aes(date,anger_day))+
+  geom_smooth(show.legend = T, size=0.3,color = "#FC4E07")+
+  geom_vline(xintercept = fa_output1$date[10104],linetype=4,show.legend = T)+
+  geom_vline(xintercept = fa_output1$date[174516],linetype=4,show.legend = T)
+```
+```{r}
+#Fear
+ggplot(fa_output1,aes(date,fear_day))+
+  geom_smooth(show.legend = T, size=0.3,color = "#D16103")+
+  geom_vline(xintercept = fa_output1$date[10104],linetype=4,show.legend = T)+
+  geom_vline(xintercept = fa_output1$date[174516],linetype=4,show.legend = T)
+```
+
+```{r}
+#Mobilization
+ggplot(fa_output1,aes(date,mobilization_day))+
+  geom_smooth(show.legend = T, size=0.3,color = "#4E84C4")+
+  geom_vline(xintercept = fa_output1$date[10104],linetype=4,show.legend = T)+
+  geom_vline(xintercept = fa_output1$date[174516],linetype=4,show.legend = T)
+```
+
+```{r}
+#Positive Emotion
+ggplot(fa_output1,aes(date,positive_day))+
+  geom_smooth(show.legend = T, size=0.3,color = "#52854C")+
+  geom_vline(xintercept = fa_output1$date[10104],linetype=4,show.legend = T)+
+  geom_vline(xintercept = fa_output1$date[174516],linetype=4,show.legend = T)
+```
+
