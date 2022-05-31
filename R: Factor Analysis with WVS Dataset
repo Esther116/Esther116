@@ -180,18 +180,4 @@ s<-stargazer( m1,m2, type="text",
               dep.var.labels.include=F,
               digits=2, initial.zero=F,
               model.numbers=F,notes.align="l")
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+              
