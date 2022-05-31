@@ -430,3 +430,4 @@ ggplot(fa_output1,aes(date,positive_day))+
   geom_vline(xintercept = fa_output1$date[174516],linetype=4,show.legend = T)
 ```
 
+ 
