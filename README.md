@@ -3,6 +3,7 @@
 - 🌱 I’m currently learning text mining with python and other quantitative research methods with multiple languages such as R and SQL
 - 💞️ I’m looking to collaborate on Chinese short-text mining
 - 📫 How to reach me: muzhiala@126.com
+- !!!This account was built just for storing my previous projects' codes.
 
 <!---
 Esther116/Esther116 is a ✨ special ✨ repository because its `README.md` (this file) appears on your GitHub profile.
