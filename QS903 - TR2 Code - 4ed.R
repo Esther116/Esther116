@@ -1,0 +1,196 @@
+rm(list = ls())
+detach()
+
+#Loading the dataset
+library(foreign)
+WVS.7<-read.spss("WVS_Cross-National_Wave_7_sav_v1_6.sav",
+                 to.data.frame=TRUE,max.value.labels=100)
+dim(WVS.CN7<-subset(WVS.7,C_COW_NUM=="China"))
+attach(WVS.CN7)
+
+
+#Pre-processing data
+Varis<-cbind((WVS.CN7)[,64:69],(WVS.CN7)[,73],(WVS.CN7)[,76],(WVS.CN7)[,119],(WVS.CN7)[,174],
+             (WVS.CN7)[,240:241],(WVS.CN7)[,244],(WVS.CN7)[,307],(WVS.CN7)[,332],(WVS.CN7)[,348:349],
+             (WVS.CN7)[,334],(WVS.CN7)[,337],(WVS.CN7)[,340],(WVS.CN7)[,343],(WVS.CN7)[,320],
+             (WVS.CN7)[,355],(WVS.CN7)[,318])
+colnames(Varis)<-c("working mother", "men better political leader", "uni more important for boys", "men better busi", 
+                   "being housewife","men adv at workplc", "wife more income", 
+                   "duty to have children","cofi_women movement", "women less corrupt",
+                   "juti:divorce", "juti:pmari sex", "juti: men beating wife",
+                   "demo:same rights", "marital status", "job", "job_spouse", "edu","edu_spouse",
+                   "edu_mother","edu_father","age","income","gender")
+{Varis.1<-na.omit(Varis)
+Varis.2<-Varis.1
+for (i in 1:5) {
+  Varis.2[[i]]<-5-as.numeric(Varis.1[[i]])
+}
+Varis.2[[6]]<-6-as.numeric(Varis.1[[6]])
+for (j in 7:8) {
+  Varis.2[[j]]<-6-as.numeric(Varis.1[[j]])
+}
+Varis.2[[9]]<-5-as.numeric(Varis.1[[9]])
+Varis.2[[10]]<-6-as.numeric(Varis.1[[10]])
+for (k in 11:13) {
+  Varis.2[[k]]<-11-as.numeric(Varis.1[[k]])
+}
+Varis.2[[14]]<-12-as.numeric(Varis.1[[14]])
+Varis.2[[15]]<-7-as.numeric(Varis.1[[15]])
+for (l in 16:17) {Varis.1[[l]]<-13-as.numeric(Varis.1[[l]])
+Varis.2[[l]]<-Varis.1[[l]]
+Varis.2[[l]][Varis.1[[l]]>11]<-1}
+for (m in 18:21) {Varis.2[[m]]<-as.numeric(Varis.1[[m]])}
+Varis.2[[22]]<-as.numeric(as.character(Varis.1[[22]]))
+Varis.2[[23]]<-as.numeric(Varis.1[[23]])
+Varis.2[[24]]<-as.numeric(Varis.1[[24]])}
+
+
+#Standardise Data
+Varis.2.2<-Varis.2
+for (n in 1:length(Varis.2)) {
+  Varis.2.2[[n]]<-(Varis.2[[n]]-mean(Varis.2[[n]]))/sd(Varis.2[[n]])
+}
+
+
+#Checking correlation
+round(cor.Varis2<-cor(Varis.2.2,use="pairwise.complete.obs",method="spearman"),2)
+library(corrplot)
+dev.new()
+corrplot(corr=cor.Varis2, method = "shade",shade.col = NA, tl.col ="black", tl.srt = 45, order = "AOE")
+
+
+#Factor analysis
+library(psych)
+library(FactoMineR)
+library(GPArotation)
+
+#Choosing the number of factors
+fa.parallel(Varis.2.2)
+f1.1<-factanal(Varis.2.2,factors = 2,rotation = "none")
+f1.2<-factanal(Varis.2.2,factors = 3,rotation = "none")
+f1.3<-factanal(Varis.2.2,factors = 4,rotation = "none")
+f1.4<-factanal(Varis.2.2,factors = 5,rotation = "none")
+round(rbind(f1.1$uniqueness,f1.2$uniqueness,f1.3$uniqueness,f1.4$uniqueness),2)
+
+
+#Omit variables which have small loading in all the factors
+#~such as, working mother, being housewife, duty to have children, cofi: women movement, 
+#~         women less corrupt, demo: same right, juti: men beating wife, marital status, gender
+Varis.3<-cbind(Varis.2.2[2:4],Varis.2.2[6:7],Varis.2.2[11:12],Varis.2.2[16:23])
+#Re-examine correlation
+round(cor.Varis3<-cor(Varis.3,use="pairwise.complete.obs",method="spearman"),2)
+library(corrplot)
+dev.new()
+corrplot(corr=cor.Varis3, method = "shade",shade.col = NA, tl.col ="black", tl.srt = 45, order = "AOE")
+
+
+#Re-modeling
+fa.parallel(Varis.3)
+print(f2<-factanal(Varis.3,factors = 2,rotation = "none"))
+#~f2 has negative value which cannot be interpreted, as such more factors are applied
+print(f2<-factanal(Varis.3,factors = 3,rotation = "none"))
+print(f2.2<-factanal(Varis.3,factors = 4,rotation = "none"))
+print(f2.3<-factanal(Varis.3,factors = 5,rotation = "none"))
+round(rbind(f2$uniqueness,f2.2$uniqueness,f2.3$uniqueness),2)
+#~variable "premarital sex" have extremely high loadings in one of the factor
+#~except five factors model
+print(f3<-factanal(Varis.3,factors = 5,rotation = "varimax"))
+print(f4<-factanal(Varis.3,factors = 5,rotation = "oblimin"))
+#~with orthogonal rotation, the extreme manifest variables remain the same
+#~with oblique rotation, the extreme variables change to "edu"
+#~however, it is hard to interpret the factor model with non-rotation 
+#~as such, the five factor number model was dropped 
+#~and the variable "juti:pmari sex" should be omitted
+
+Varis.3.1<-cbind(Varis.3[1:6],Varis.3[8:15])
+fa.parallel(Varis.3.1)
+print(f5<-factanal(Varis.3.1,factors = 3,rotation = "none"))
+print(f5.1<-factanal(Varis.3.1,factors = 4,rotation = "none"))
+print(f5.2<-factanal(Varis.3.1,factors = 5,rotation = "none"))
+#f5.1 has extremely high loadings in factor one regarding to variable "edu" 
+round(rbind(f5$uniqueness,f5.2$uniqueness),2)
+#f5 was selected because resonable uniqueness
+print(f6<-factanal(Varis.3.1,factors = 3,rotation = "varimax"))
+print(f7<-factanal(Varis.3.1,factors = 3,rotation = "oblimin"))
+round(rbind(f6$uniqueness,f7$uniqueness),2)
+round(cbind(f6$loadings,f7$loadings),2)
+#f7 was selected because it has more concentrated loadings on each factor
+
+
+#Omit 2nd (age, juti:divorce)
+#~age appear negative to all the model, I would like to omit it from the model 
+#~and then apply it in the LR model as an independent variables
+Varis.4<-cbind(Varis.3.1[1:5],Varis.3.1[7:12],Varis.3.1[14])
+fa.parallel(Varis.4)
+#~ 2 was suggested as the number of the factor
+print(f7<-factanal(Varis.4,factors = 2,rotation = "none"))
+print(f7.1<-factanal(Varis.4,factors = 3,rotation = "none"))
+print(f7.2<-factanal(Varis.4,factors = 4,rotation = "none"))
+print(f7.3<-factanal(Varis.4,factors = 5,rotation = "none"))
+round(rbind(f7$uniqueness,f7.1$uniqueness,f7.2$uniqueness,f7.3$uniqueness),2)
+#f7, f7.1 were selected because reasonable uniqueness
+print(f8<-factanal(Varis.4,factors = 2,rotation = "varimax"))
+print(f8.1<-factanal(Varis.4,factors = 3,rotation = "oblimin"))
+print(f9<-factanal(Varis.4,factors = 2,rotation = "oblimin"))
+print(f9.1<-factanal(Varis.4,factors = 3,rotation = "oblimin"))
+round(cbind(f8$loadings,f9$loadings),2)
+
+
+#Comparing models
+library(psy)
+dev.new()
+{layout(1:4); par(mar=c(2,2,1,1))
+scree.plot(f8$correlation);scree.plot(f8.1$correlation);
+scree.plot(f9$correlation);scree.plot(f9.1$correlation)}
+dev.new()
+{layout(1:4); par(mar=c(2,2,1,1))
+plot(f8$loadings[,1:2],type="n");text(f8$loadings[,1:2],labels=names(Varis.4),cex=1.2)
+plot(f8.1$loadings[,1:2],type="n");text(f8.1$loadings[,1:2],labels=names(Varis.4),cex=1.2)
+plot(f9$loadings[,1:2],type="n");text(f9$loadings[,1:2],labels=names(Varis.4),cex=1.2)
+plot(f9.1$loadings[,1:2],type="n");text(f9.1$loadings[,1:2],labels=names(Varis.4),cex=1.2)}
+#~f8 and f9 better than f8.1 and f9.1 because the former two have
+#~more concentrated manifest variables
+#~f8 is more sutiable for examining the hypotheses than f9
+#~because it have two factors which can be interpret the two variables we need in the regression
+write.csv(x=round(f8$loadings,2),file = "loadings.csv",sep = ",")
+
+#Communality
+f8.communality<-round((1-f8$uniquenesses),2)
+write.csv(f8.communality,file = "communality.csv",sep = ",")
+
+
+#Factor scores
+f8.sco<-factor.scores(x = Varis.4,f = f8,method = "Bartlett")
+f8.sco$weights
+
+#Regressions
+regre.data<-cbind(Varis.2.2[5],Varis.2.2[24],Varis.3[15],f8.sco$scores)
+colnames(regre.data)<-c("being_housewife","gender","age","social_status","social_positioning")
+detach(WVS.CN7)
+attach(regre.data)
+
+summary(m1<-lm(being_housewife~social_status+social_positioning))
+summary(m2<-lm(being_housewife~social_status+social_positioning+age+gender))
+
+
+library(stargazer)
+s<-stargazer( m1,m2, type="text",
+              column.labels=c("Model 1","Model 2","Model 3","Model 4","Model 5"),
+              dep.var.labels.include=F,
+              digits=2, initial.zero=F,
+              model.numbers=F,notes.align="l")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
